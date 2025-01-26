@@ -1,0 +1,23 @@
+/* index.css */
+
+body {
+  background-image: url('https://preview.redd.it/im-trying-to-do-a-fedora-linux-wallpaper-how-can-i-improve-v0-61dz1dm4i4t81.png?auto=webp&s=28b85fa5e57d2fe7a7ae22b340e742df03bfe73b');
+  background-size: cover;
+  background-position: center;
+  height: 100vh;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.terminal-container {
+  position: relative;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px); 
+  border-radius: 10px;
+  box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
+  width: 80%;
+  max-width: 800px;
+  padding: 20px;
+}
