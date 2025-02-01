@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
+import './App.css';
 
 export default function TerminalCV() {
   const [command, setCommand] = useState("");
@@ -8,97 +9,122 @@ export default function TerminalCV() {
   const [history, setHistory] = useState([]);
   const [historyIndex, setHistoryIndex] = useState(0);
   const [showHint, setShowHint] = useState(true);
+  const [position, setPosition] = useState({ x: 50, y: 50 });
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0, initialX: 0, initialY: 0 });
 
+  
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowHint(false);
-    }, 10000);
-    return () => clearTimeout(timer);
+    const handleResize = () => {
+      setPosition(prev => ({
+        x: Math.min(prev.x, window.innerWidth - 400),
+        y: Math.min(prev.y, window.innerHeight - 300)
+      }));
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  const toggleHint = () => {
-    setShowHint(!showHint);
+  const closeHint = () => setShowHint(false);
+  // const toggleHint = () => setShowHint(!showHint);
+
+  useEffect(() => {
+    const handleMove = (clientX, clientY) => {
+      if (!isDragging) return;
+      
+      const deltaX = clientX - dragStart.x;
+      const deltaY = clientY - dragStart.y;
+      const maxX = window.innerWidth - 400;
+      const maxY = window.innerHeight - 300;
+
+      setPosition({
+        x: Math.min(maxX, Math.max(0, dragStart.initialX + deltaX)),
+        y: Math.min(maxY, Math.max(0, dragStart.initialY + deltaY))
+      });
+    };
+
+    const handleMouseMove = (e) => handleMove(e.clientX, e.clientY);
+    const handleTouchMove = (e) => handleMove(e.touches[0].clientX, e.touches[0].clientY);
+    const handleUp = () => setIsDragging(false);
+
+    if (isDragging) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('touchmove', handleTouchMove);
+      document.addEventListener('mouseup', handleUp);
+      document.addEventListener('touchend', handleUp);
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('touchmove', handleTouchMove);
+      document.removeEventListener('mouseup', handleUp);
+      document.removeEventListener('touchend', handleUp);
+    };
+  }, [isDragging, dragStart]);
+
+  const startDrag = (clientX, clientY) => {
+    setIsDragging(true);
+    setDragStart({
+      x: clientX,
+      y: clientY,
+      initialX: position.x,
+      initialY: position.y
+    });
   };
 
+  
   const handleCommand = (e) => {
     e.preventDefault();
-
     const newOutput = [...output];
     newOutput.push(`[andi@fedora] ~$ ${command}`);
-
     setIsLoading(true);
 
     setTimeout(() => {
       switch (command.toLowerCase()) {
         case "cat about-me.txt":
           newOutput.push(
-            "👤 Name: Andi Cakolli"
+            "👤 Name: Andi Cakolli",
+            "💼 Role: Backend Developer, Trainer at jCoders Academy",
+            "💻 Skills: Node.js, ReactJS, MongoDB, QGIS, Ethical Hacking, Cybersecurity",
+            "",
+            "🚀 Passionate about programming, automation, and cybersecurity.",
+            "   Constantly experimenting with new scripts, optimizations, and tools.",
+            "   Whether it's building automation scripts, developing backend systems,",
+            "   or diving into ethical hacking, I'm always seeking to improve and innovate.",
+            "",
+            "📚 Experience:",
+            "  - 1.5 years teaching at jCoders Academy",
+            "  - Developer for multiple jCoders applications",
+            "  - Created custom student progress tracking system",
+            "  - Organized programming & cybersecurity workshops",
+            "",
+            "🎓 Certifications:",
+            "  - Riinvest Hackathon Coders Hub (2018)",
+            "  - Best Student Award (2019)",
+            "  - Freecodecamp Cybersecurity (2021)"
           );
-          newOutput.push(
-            "💼 Role: Backend Developer, Trainer at jCoders Academy"
-          );
-          newOutput.push(
-            "💻 Skills: Node.js, ReactJS, MongoDB, QGIS, Ethical Hacking, Cybersecurity"
-          );
-          newOutput.push("");
-          newOutput.push(
-            "🚀 Passionate about programming, automation, and cybersecurity. "
-          );
-          newOutput.push(
-            "   Constantly experimenting with new scripts, optimizations, and tools to push the limits of what's possible."
-          );
-          newOutput.push(
-            "   Whether it's building automation scripts, developing backend systems, or diving into ethical hacking, I'm always seeking to improve and innovate."
-          );
-          newOutput.push("");
-          newOutput.push(
-            "📚 Experience:"
-          );
-          newOutput.push(
-            "  - 1.5 years of teaching and mentoring students at jCoders Academy"
-          );
-          newOutput.push(
-            "  - Developer for multiple applications and tools for jCoders Academy"
-          );
-          newOutput.push(
-            "  - Created a custom point system to track and motivate student progress"
-          );
-          newOutput.push(
-            "  - Organized workshops and training sessions focused on programming & cybersecurity"
-          );
-          newOutput.push("");
-          newOutput.push(
-            "🎓 Certifications:"
-          );
-          newOutput.push(
-            "  - Riinvest Hackathon Coders Hub (2018) - HTML, CSS, JQuery, Bootstrap, OOP with JavaScript"
-          );
-          newOutput.push(
-            "  - Best Student Award (2019) - Kosovo Municipal IT Competitions"
-          );
-          newOutput.push(
-            "  - Information Security (2021) - Freecodecamp Cybersecurity Module"
-          );    
           break;
         case "ls projects":
           newOutput.push(
-            "📝 Ticket Management System for jCoders Academy (Node.js, ReactJS, MongoDB)",
-            "🤖 Discord Bot for jCoders Academy (Node.js, MongoDB)",
-            "💬 iPhone Messages UI Clone (Frontend Only)",
-            "📢 SMEASE (Social Media Ease) - A social media management tool",
-            "🌱 Urban Mjedisi - A platform for environmental awareness & sustainability",
-            "🛡️ Various Cybersecurity & Ethical Hacking Experiments",
-            "🎮 Custom Automation Scripts & Cheats for Games (Selenium, Python)"
-        );        
+            "📝 Ticket Management System (Node.js, React, MongoDB)",
+            "🤖 Discord Bot (Node.js, MongoDB)",
+            "💬 iPhone Messages UI Clone",
+            "📢 SMEASE - Social media tool",
+            "🌱 Urban Mjedisi - Environmental platform",
+            "🛡️ Cybersecurity Experiments",
+            "🎮 Game Automation Scripts (Selenium, Python)"
+          );
           break;
         case "echo contact info":
           newOutput.push("Email: andi@example.com\nGitHub: github.com/AndiCakolli");
           break;
         case "clear":
           setOutput([]);
-          setCommand(""); 
-          setIsLoading(false); 
-          return;
+          break;
+        case "ls":
+          newOutput.push("about-me.txt");
+        break;
         case "date":
           newOutput.push(new Date().toLocaleString());
           break;
@@ -108,7 +134,7 @@ export default function TerminalCV() {
         default:
           newOutput.push(`Command not found: ${command}`);
       }
-      
+
       setOutput(newOutput);
       setCommand("");
       setIsLoading(false);
@@ -128,92 +154,130 @@ export default function TerminalCV() {
   };
 
   return (
-    <div className="bg-dark text-success p-4" style={{ maxWidth: "1000px", minWidth: "600px", borderRadius: "10px" }}>
+    <div 
+      className="bg-dark text-success p-2 p-sm-3"
+      style={{
+        position: 'fixed',
+        left: position.x,
+        top: position.y,
+        width: '95vw',
+        maxWidth: '1000px',
+        minWidth: '280px',
+        borderRadius: '8px',
+        cursor: isDragging ? 'grabbing' : 'default',
+        userSelect: 'none',
+        touchAction: 'none',
+        boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+        zIndex: 1000
+      }}
+    >
       {/* Terminal Header */}
-      <div className="bg-dark text-white px-4 py-3 d-flex justify-content-between align-items-center rounded-top shadow-sm" style={{ borderBottom: "2px solid #2D3748" }}>
+      <div 
+        className="bg-dark text-white px-3 py-2 d-flex justify-content-between align-items-center"
+        style={{
+          borderBottom: '2px solid #2D3748',
+          cursor: isDragging ? 'grabbing' : 'grab'
+        }}
+        onMouseDown={(e) => startDrag(e.clientX, e.clientY)}
+        onTouchStart={(e) => startDrag(e.touches[0].clientX, e.touches[0].clientY)}
+      >
         <div className="d-flex align-items-center">
-          <div className="w-4 h-4 bg-danger rounded-circle cursor-pointer" title="Close" style={{ marginRight: "10px", border: "2px solid yellow" }}></div>
-          <div className="w-4 h-4 bg-warning rounded-circle cursor-pointer" title="Minimize" style={{ marginRight: "10px", border: "2px solid red" }}></div>
-          <div className="w-4 h-4 bg-success rounded-circle cursor-pointer" title="Maximize" style={{ marginRight: "10px", border: "2px solid green" }}></div>
-          <div className="w-4 h-4 bg-info rounded-circle cursor-pointer" title="Help" style={{ border: "2px solid cyan" }} onClick={toggleHint}></div>
+          {['danger', 'warning', 'success', 'info'].map((color, i) => (
+            <div
+              key={color}
+              className={`bg-${color} rounded-circle me-2`}
+              style={{
+                width: '0.7rem',
+                height: '0.7rem',
+                border: `2px solid var(--bs-${color})`
+              }}
+            />
+          ))}
         </div>
-        <div className="text-light font-weight-bold">CV Terminal</div>
+        <div className="text-light fw-bold" style={{ fontSize: 'clamp(0.9rem, 2vw, 1.1rem)' }}>
+          CV Terminal
+        </div>
       </div>
 
-      {/* Help Hint Overlay */}
+      {/* Help Overlay */}
       {showHint && (
-        <div style={{
-          position: 'absolute',
-          top: '100px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          backgroundColor: '#001a00',
-          border: '2px solid #00FF00',
-          borderRadius: '5px',
-          padding: '15px',
-          zIndex: 1000,
-          width: '80%',
-          maxWidth: '600px'
-        }}>
+        <div 
+          className="position-absolute start-50 translate-middle-x p-3"
+          style={{
+            top: '20%',
+            width: '90%',
+            maxWidth: '500px',
+            backgroundColor: '#001a00',
+            border: '2px solid #00FF00',
+            borderRadius: '8px',
+            zIndex: 1001
+          }}
+        >
           <div className="d-flex justify-content-between align-items-center mb-2">
-            <h5 style={{ color: '#00FF00' }}>Terminal Help</h5>
+            <h5 className="text-success mb-0">Terminal Help</h5>
             <button 
-              onClick={toggleHint}
-              style={{
-                background: 'none',
-                border: '1px solid #00FF00',
-                color: '#00FF00',
-                borderRadius: '3px',
-                padding: '2px 8px'
-              }}
+              onClick={closeHint}
+              className="btn btn-sm text-success border-success"
             >
-              X
+              ✕
             </button>
           </div>
-          <p style={{ color: '#00FF00', marginBottom: '8px' }}>Available commands:</p>
-          <ul style={{ color: '#00FF00', listStyleType: 'none', paddingLeft: '0' }}>
-            <li><code>cat about-me.txt</code> - Show personal info</li>
-            <li><code>ls projects</code> - List key projects</li>
-            <li><code>echo contact info</code> - Display contact information</li>
-            <li><code>clear</code> - Clear the terminal</li>
-            <li><code>date</code> - Show current date/time</li>
-            <li><code>help</code> - List available commands</li>
+          <ul className="text-success list-unstyled">
+            {[
+              ['cat about-me.txt', 'Show personal info'],
+              ['ls projects', 'List projects'],
+              ['echo contact info', 'Contact information'],
+              ['clear', 'Clear terminal'],
+              ['date', 'Current date/time'],
+              ['help', 'List commands']
+            ].map(([cmd, desc]) => (
+              <li key={cmd} className="mb-1">
+                <code>{cmd}</code> - {desc}
+              </li>
+            ))}
           </ul>
-          <p style={{ color: '#00FF00', marginTop: '10px', marginBottom: '0' }}>
-            Use ↑/↓ arrows to navigate command history
-          </p>
         </div>
       )}
 
       {/* Terminal Body */}
-      <div className="flex-grow p-4 overflow-y-auto" style={{ maxHeight: "500px" }}>
-        {output.map((line, index) => (
-          <div
-            key={index}
-            className="whitespace-pre-wrap mb-2"
-            style={{ color: line.startsWith("Command not found") ? "red" : "#00FF00" }}
+      <div 
+        className="p-2 p-sm-3 overflow-auto"
+        style={{
+          maxHeight: '50vh',
+          minHeight: '200px',
+          fontSize: 'clamp(0.8rem, 2vw, 1rem)'
+        }}
+      >
+        {output.map((line, i) => (
+          <div 
+            key={i}
+            className={`mb-1 ${line.startsWith('Command not found') ? 'text-danger' : 'text-success'}`}
           >
             {line}
           </div>
         ))}
-        {isLoading && <div className="whitespace-pre-wrap mb-2 text-warning">Loading...</div>}
+        {isLoading && <div className="text-warning">Loading...</div>}
       </div>
 
       {/* Command Input */}
-      <form onSubmit={handleCommand} className="bg-gray-800 text-white px-4 py-2">
-        <div className="d-flex align-items-center">
-          <span className="mr-2">[andi@fedora] ~$</span>
-          <input
-            type="text"
-            className="flex-grow bg-black text-success border-0 outline-none font-monospace p-1 rounded"
-            style={{ height: "30px" }}
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            onKeyDown={handleKeyDown}
-            autoFocus
-          />
-        </div>
-      </form>
+      <form onSubmit={handleCommand} className="bg-gray-800 mt-2 p-2">
+  <div className="d-flex align-items-center gap-2">
+    <span className="text-success">[andi@fedora] ~$</span>
+    <input
+  type="text"
+  value={command}
+  onChange={(e) => setCommand(e.target.value)}
+  onKeyDown={handleKeyDown}
+  className="custom-input flex-grow-1 bg-dark text-success border-0 px-2 py-1 rounded"
+  style={{
+    fontSize: 'inherit',
+    minWidth: '50%'
+  }}
+/>
+
+  </div>
+</form>
+
     </div>
   );
 }
